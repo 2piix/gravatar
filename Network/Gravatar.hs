@@ -81,6 +81,11 @@ data GravatarOptions = GravatarOptions
     , gDefault      :: Maybe DefaultImg
     , gForceDefault :: ForceDefault
     , gRating       :: Maybe Rating
+    -- | The scheme to use in the gravatar URL, including a ":", but not the
+    --   "//". This is so that an empty value will produce valid protocol-less
+    --   URLs. The default is "http:" for backwards compatability, but may
+    --   change to the empty string in a future version.
+    , gScheme       :: String
     }
 
 instance Default GravatarOptions where
@@ -93,11 +98,16 @@ defaultConfig = GravatarOptions
     , gDefault      = Nothing
     , gForceDefault = ForceDefault False
     , gRating       = Nothing
+    , gScheme       = "http:"
     }
 
 -- | Return the avatar for the given email using the provided options 
 gravatar :: GravatarOptions -> Text -> String
-gravatar opts e = "http://www.gravatar.com/avatar/" ++ hashEmail e `addParams` opts
+gravatar opts e = concat
+    [ gScheme opts
+    , "//www.gravatar.com/avatar/"
+    , hashEmail e
+    ]`addParams` opts
 
 -- | <http://en.gravatar.com/site/implement/hash/>
 hashEmail :: Text -> String
